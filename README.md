@@ -36,11 +36,16 @@ Les variables modifiables sont:
 - le pas représenté par des cubes dans la grille : `int nCubes = 16`. A modifier en fonction de la puissance de votre machine. 
 - `SurfType` : la manière de créer la surface à partir du point central d'un voxel 
 
+![Image 1](IGA/data/images/06.png)
 
 #### Affichage 
 
 A la suite du calcul, une fenetre GLUT/OPENGL s'ouvre, elle permet à l'aide de la souris de visualiser le rendu (molette = zoom, clic droit = deplacement, clic gauche = rotation). 
 
+
+![Image 1](IGA/data/images/08.png)
+![Image 1](IGA/data/images/09.png)
+![Image 1](IGA/data/images/10.png)
 
 
 ###  Recalage de nuages de points => Iterative Closest Point 
@@ -48,7 +53,7 @@ A la suite du calcul, une fenetre GLUT/OPENGL s'ouvre, elle permet à l'aide de 
 On se propose ici d'implémenter l'algorithme de l'iterative Closest Point.
 On dispose d'un pointset, que l'on va dupliquer pour simuler un second pointset modifié (rotation + translation). On applique ensuite l'algorithme de l'ICP pour recaler les deux nuages de points. 
 
-
+![Image 1](IGA/data/images/03.png)
 
 #### Affichage 
 
@@ -62,3 +67,5 @@ Le RMSD donne une indication de la réussite du recalage, aucun critère de fin 
 Limitations : une mauvaise orientation initiale empeche les deux pointsets de se recaler, relancer la simulation. 
 
 ![Image 1](IGA/data/images/01.png)
+![Image 1](IGA/data/images/04.png)
+![Image 1](IGA/data/images/05.png)
