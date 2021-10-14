@@ -44,11 +44,11 @@ Les variables modifiables sont:
 A la suite du calcul, une fenetre GLUT/OPENGL s'ouvre, elle permet à l'aide de la souris de visualiser le rendu (molette = zoom, clic droit = deplacement, clic gauche = rotation). 
 
 
-![Image 1](IGA/data/images/08.png)
-
-![Image 1](IGA/data/images/09.png)
-
-![Image 1](IGA/data/images/10.png)
+![Image 2](IGA/data/images/08.png)
+.
+![Image 3](IGA/data/images/09.png)
+.
+![Image 4](IGA/data/images/10.png)
 
 
 ###  Recalage de nuages de points => Iterative Closest Point 
@@ -56,21 +56,21 @@ A la suite du calcul, une fenetre GLUT/OPENGL s'ouvre, elle permet à l'aide de 
 On se propose ici d'implémenter l'algorithme de l'iterative Closest Point.
 On dispose d'un pointset, que l'on va dupliquer pour simuler un second pointset modifié (rotation + translation). On applique ensuite l'algorithme de l'ICP pour recaler les deux nuages de points. 
 
-![Image 1](IGA/data/images/03.png)
+![Image 5](IGA/data/images/03.png)
 
 #### Affichage 
 
 La souris permet de se déplacer dans la scene.
 Les touches suivantes permettent de: 
 - `S` lancer une itération d'ICP 
-- `L`Afficher/retirer la position intiale du pointset source. 
+- `L` Afficher/retirer la position intiale du pointset source. 
 
 Le RMSD donne une indication de la réussite du recalage, aucun critère de fin n'est implémenté (le RMSD en serait un). 
 
 Limitations : une mauvaise orientation initiale empeche les deux pointsets de se recaler, relancer la simulation. 
 
-![Image 1](IGA/data/images/01.png)
-
-![Image 1](IGA/data/images/04.png)
-
-![Image 1](IGA/data/images/05.png)
+![Image 6](IGA/data/images/01.png)
+.
+![Image 7](IGA/data/images/04.png)
+.
+![Image 8](IGA/data/images/05.png)
