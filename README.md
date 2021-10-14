@@ -38,13 +38,16 @@ Les variables modifiables sont:
 
 ![Image 1](IGA/data/images/06.png)
 
+
 #### Affichage 
 
 A la suite du calcul, une fenetre GLUT/OPENGL s'ouvre, elle permet à l'aide de la souris de visualiser le rendu (molette = zoom, clic droit = deplacement, clic gauche = rotation). 
 
 
 ![Image 1](IGA/data/images/08.png)
+
 ![Image 1](IGA/data/images/09.png)
+
 ![Image 1](IGA/data/images/10.png)
 
 
@@ -67,5 +70,7 @@ Le RMSD donne une indication de la réussite du recalage, aucun critère de fin 
 Limitations : une mauvaise orientation initiale empeche les deux pointsets de se recaler, relancer la simulation. 
 
 ![Image 1](IGA/data/images/01.png)
+
 ![Image 1](IGA/data/images/04.png)
+
 ![Image 1](IGA/data/images/05.png)
