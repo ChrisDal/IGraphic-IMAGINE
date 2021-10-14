@@ -40,3 +40,23 @@ Les variables modifiables sont:
 #### Affichage 
 
 A la suite du calcul, une fenetre GLUT/OPENGL s'ouvre, elle permet à l'aide de la souris de visualiser le rendu (molette = zoom, clic droit = deplacement, clic gauche = rotation). 
+
+
+
+###  Recalage de nuages de points => Iterative Closest Point 
+
+On se propose ici d'implémenter l'algorithme de l'iterative Closest Point.
+On dispose d'un pointset, que l'on va dupliquer pour simuler un second pointset modifié (rotation + translation). On applique ensuite l'algorithme de l'ICP pour recaler les deux nuages de points. 
+
+
+
+#### Affichage 
+
+La souris permet de se déplacer dans la scene.
+Les touches suivantes permettent de: 
+- `S` lancer une itération d'ICP 
+- `L`Afficher/retirer la position intiale du pointset source. 
+
+Le RMSD donne une indication de la réussite du recalage, aucun critère de fin n'est implémenté (le RMSD en serait un). 
+
+Limitations : une mauvaise orientation initiale empeche les deux pointsets de se recaler, relancer la simulation. 
