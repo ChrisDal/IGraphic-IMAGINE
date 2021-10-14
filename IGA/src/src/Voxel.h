@@ -3,65 +3,6 @@
 #include <array>
 #include "Vec3.h"
 
-// Placer ce fichier dans le dossier src 
-// au meme niveau que Vec3.h 
-
-class Arrete
-{
-private: 
-    Vec3 m_sommet1; 
-    Vec3 m_sommet2; 
-public: 
-    Arrete(const Vec3& s1, const Vec3 s2)
-        : m_sommet1(s1), m_sommet2(s2)
-    {}; 
-
-    ~Arrete() {};
-
-    // Copy ctor 
-    Arrete(const Arrete& source)
-    {
-        m_sommet1 = source.m_sommet1; 
-        m_sommet2 = source.m_sommet2;
-    }
-
-    // 3 : copy assignment operator
-    Arrete& operator=(const Arrete& source) 
-    {
-        if (this == &source)
-            return *this;
-
-        m_sommet1 = source.m_sommet1;
-        m_sommet2 = source.m_sommet2;
-
-        return *this;
-
-    }
-
-    // 4 : move constructor
-    Arrete(Arrete&& source) 
-    {
-        m_sommet1 = source.m_sommet1;
-        m_sommet2 = source.m_sommet2;
-
-        source.m_sommet1 = Vec3(0.0f, 0.0f, 0.0f); 
-        source.m_sommet2 = Vec3(0.0f, 0.0f, 0.0f);
-    }
-
-    bool operator==(Arrete& source)
-    {
-        if (source.m_sommet1 != m_sommet1 || source.m_sommet2 != m_sommet2)
-            return true; 
-        
-        
-        return false; 
-    }
-
-
-
-};
-
-
 class Voxel
 {
 private:
