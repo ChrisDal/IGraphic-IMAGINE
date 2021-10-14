@@ -60,3 +60,5 @@ Les touches suivantes permettent de:
 Le RMSD donne une indication de la réussite du recalage, aucun critère de fin n'est implémenté (le RMSD en serait un). 
 
 Limitations : une mauvaise orientation initiale empeche les deux pointsets de se recaler, relancer la simulation. 
+
+![Image 1](IGA/data/images/01.png)
