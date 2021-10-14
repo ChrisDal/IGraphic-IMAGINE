@@ -76,6 +76,7 @@ Le RMSD donne une indication de la réussite du recalage, aucun critère de fin 
 
 Limitations : une mauvaise orientation initiale empeche les deux pointsets de se recaler, relancer la simulation. 
 
+
 ![Image 6](IGA/data/images/01.png)
 
 
@@ -83,3 +84,5 @@ Limitations : une mauvaise orientation initiale empeche les deux pointsets de se
 
 
 ![Image 8](IGA/data/images/05.png)
+.
+
