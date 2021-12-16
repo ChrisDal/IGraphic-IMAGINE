@@ -1,0 +1,56 @@
+﻿  Camera.cpp
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(176,1): warning C4244: '/=' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(286,21): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(287,21): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(288,21): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(381,29): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(380,29): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(379,24): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(383,21): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(392,29): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(391,29): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(390,24): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(394,21): warning C4244: 'initialisation' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(408,30): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(408,53): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(413,61): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(413,131): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(433,23): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(434,23): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(435,23): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(440,40): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(441,41): warning C4244: '=' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Camera.cpp(27,18): warning C4305: '=' : troncation de 'double' à 'float'
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Camera.cpp(106,22): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Camera.cpp(105,22): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Camera.cpp(104,27): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Camera.cpp(103,27): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(338,68): warning C4244: 'argument' : conversion de 'double' en 'float', perte possible de données
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(385): message : voir la référence à l'instanciation de la fonction modèle 'Mat3 Mat3::getRotationMatrixFromAxisAndAngle<Vec3>(const point_t &,float)' en cours de compilation
+          with
+          [
+              point_t=Vec3
+          ]
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(352,44): warning C4244: 'argument' : conversion de 'T2' en 'float', perte possible de données
+          with
+          [
+              T2=int
+          ]
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(476): message : voir la référence à l'instanciation de la fonction modèle 'Mat3 Mat3::diag<int>(T2,T2,T2)' en cours de compilation
+          with
+          [
+              T2=int
+          ]
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(352,32): warning C4244: 'argument' : conversion de 'T2' en 'float', perte possible de données
+          with
+          [
+              T2=int
+          ]
+D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\src\Vec3.h(352,20): warning C4244: 'argument' : conversion de 'T2' en 'float', perte possible de données
+          with
+          [
+              T2=int
+          ]
+  tp.cpp
+  Génération de code en cours...
+  TP6.vcxproj -> D:\DALILA\ProgFormation\M2-IMAGINE\IGA\TP_IGA\HAI9171\IGA\TP6\build\Debug\TP6.exe
