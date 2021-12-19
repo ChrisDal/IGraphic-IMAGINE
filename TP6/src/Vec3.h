@@ -4,6 +4,7 @@
 #include <cmath>
 #include <iostream>
 #include <cassert>
+#include <functional>
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
@@ -56,6 +57,19 @@ public:
         mVals[2] /= s;
     }
 
+    // equal  
+    bool operator==(const Vec3& other)
+    {
+        return (other.mVals[0] == this->mVals[0]) && (other.mVals[1] == this->mVals[1]) && (other.mVals[2] == this->mVals[2]);
+    }
+
+    bool operator!=(const Vec3& other)
+    {
+        //return (other.mVals[0] != this->mVals[0]) || (other.mVals[1] != this->mVals[1]) || (other.mVals[2] == this->mVals[2]);
+        return !(*this == other); 
+    }
+
+
     static Vec3 Rand(float magnitude = 1.f) {
         return Vec3( magnitude * (-1.f + 2.f * rand() / (float)(RAND_MAX)) , magnitude * (-1.f + 2.f * rand() / (float)(RAND_MAX)) , magnitude * (-1.f + 2.f * rand() / (float)(RAND_MAX)) );
     }
@@ -94,7 +108,13 @@ static inline std::istream & operator >> (std::istream & s , Vec3 & p) {
 }
 
 
+static inline bool operator == (const Vec3& a, const Vec3& b) {
+    return  (a[0] == b[0]) && (a[1] == b[1]) && (a[2] == b[2]); 
+}
 
+static inline bool operator != (const Vec3& a, const Vec3& b) {
+    return  ! (a == b);
+}
 
 
 

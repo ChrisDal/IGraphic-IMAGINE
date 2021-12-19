@@ -29,6 +29,98 @@
 #include "src/Camera.h"
 
 
+// VecDictPy is a python-like dictionnary specialized in Vec3f-key
+struct VecDictPy {
+
+    std::vector<std::vector<int>> index; 
+    std::vector<Vec3> points; 
+
+    float epsilon = (float)1.0e-7; 
+
+    inline VecDictPy() {}; 
+    inline ~VecDictPy() {}; 
+    // handling existing or not point 
+    void add(const Vec3& point, int idx) {
+        int ind = findIndex(point); 
+        
+        if (ind == -1)
+        {
+            points.push_back(point); 
+            std::vector<int> tmpvec = { idx }; 
+            index.push_back(tmpvec); 
+        }
+        else
+        {
+            index[ind].push_back(idx);
+        }
+    }
+
+    // more accurate for float 
+    inline bool equals(const Vec3& a, const Vec3& b) {
+        return std::abs(a[0] - b[0]) < epsilon && std::abs(a[1] - b[1]) < epsilon && std::abs(a[2] - b[2]) < epsilon;
+    }
+
+    bool contains(const Vec3& point, bool useEqual = false) {
+
+        if (!useEqual) {
+            return findIndex(point) != -1; 
+        }
+        else
+        {
+            return findIndexEqual(point) != -1;
+        }
+        
+    }
+
+    // retrieve by index 
+    std::vector<int> operator [] (unsigned int c) const { return index[c];  }
+    std::vector<int>& operator [] (unsigned int c) { return index[c]; };
+   
+    // Find index : use operator == from Vec3 
+    
+    int findIndex(const Vec3& point)
+    {
+        for (size_t pk = 0; pk < points.size(); pk++) {
+            if (points[pk] == point) {
+                return pk;
+            }
+        }
+
+        return -1; 
+    }
+
+    // use VecDictPy equals function
+    int findIndexEqual(const Vec3& point)
+    {
+        for (size_t pk = 0; pk < points.size(); pk++) {
+            if (equals(points[pk], point)) {
+                return pk;
+            }
+        }
+
+        return -1;
+    }
+
+    int processNindex() {
+        int nindex = 0; 
+        for (size_t kni = 0; kni < index.size(); kni++)
+        {
+            nindex += index[kni].size(); 
+        }
+
+        return nindex; 
+    }
+
+    // old pythonic-way to retrieve keys and values (copy)
+    std::vector<Vec3> keys() { return points; }
+    std::vector<std::vector<int>> values() { return index; }
+
+    void printInfos() {
+        std::cout << "Npoints = " << points.size() << std::endl;
+        std::cout << "Number of indices = " << processNindex()  << std::endl;
+    }
+};
+
 struct Triangle {
     inline Triangle () {
         v[0] = v[1] = v[2] = 0;
@@ -46,16 +138,158 @@ struct Triangle {
         v[0] = t.v[0];   v[1] = t.v[1];   v[2] = t.v[2];
         return (*this);
     }
+
+    inline bool operator==(const Triangle& rhs) const {
+        return v[0] == rhs[0] && v[1] == rhs[1] && v[2] == rhs[2]; 
+    }
+
+    inline bool operator!=(const Triangle& rhs) const {
+        return !(*this == rhs);
+    }
+
     // membres :
     unsigned int v[3];
 };
 
+// ------------------------------------
+// File I/O
+// ------------------------------------
+bool saveOFF(const std::string& filename,
+    std::vector< Vec3 >& i_vertices,
+    std::vector< Vec3 >& i_normals,
+    std::vector< Triangle >& i_triangles,
+    bool save_normals = true) {
+    std::ofstream myfile;
+    myfile.open(filename.c_str());
+    if (!myfile.is_open()) {
+        std::cout << filename << " cannot be opened" << std::endl;
+        return false;
+    }
+
+    myfile << "OFF" << std::endl;
+
+    unsigned int n_vertices = i_vertices.size(), n_triangles = i_triangles.size();
+    myfile << n_vertices << " " << n_triangles << " 0" << std::endl;
+
+    for (unsigned int v = 0; v < n_vertices; ++v) {
+        myfile << i_vertices[v][0] << " " << i_vertices[v][1] << " " << i_vertices[v][2] << " ";
+        if (save_normals) myfile << i_normals[v][0] << " " << i_normals[v][1] << " " << i_normals[v][2] << std::endl;
+        else myfile << std::endl;
+    }
+    for (unsigned int f = 0; f < n_triangles; ++f) {
+        myfile << 3 << " " << i_triangles[f][0] << " " << i_triangles[f][1] << " " << i_triangles[f][2];
+        myfile << std::endl;
+    }
+    myfile.close();
+    return true;
+}
+
+void openOFF(std::string const& filename,
+    std::vector<Vec3>& o_vertices,
+    std::vector<Vec3>& o_normals,
+    std::vector< Triangle >& o_triangles)
+{
+    std::ifstream myfile;
+    myfile.open(filename.c_str());
+    if (!myfile.is_open())
+    {
+        std::cout << filename << " cannot be opened" << std::endl;
+        return;
+    }
+
+    std::string magic_s;
+
+    myfile >> magic_s;
+
+    if (magic_s != "OFF")
+    {
+        std::cout << magic_s << " != OFF :   We handle ONLY *.off files." << std::endl;
+        myfile.close();
+        exit(1);
+    }
+
+    int n_vertices, n_faces, dummy_int;
+    myfile >> n_vertices >> n_faces >> dummy_int;
+
+    o_vertices.clear();
+
+    for (int v = 0; v < n_vertices; ++v)
+    {
+        float x, y, z;
+
+        myfile >> x >> y >> z;
+        o_vertices.push_back(Vec3(x, y, z));
+
+    }
+
+    o_triangles.clear();
+    for (int f = 0; f < n_faces; ++f)
+    {
+        int n_vertices_on_face;
+        myfile >> n_vertices_on_face;
+
+        if (n_vertices_on_face == 3)
+        {
+            unsigned int _v1, _v2, _v3;
+            myfile >> _v1 >> _v2 >> _v3;
+
+            o_triangles.push_back(Triangle(_v1, _v2, _v3));
+        }
+        else if (n_vertices_on_face == 4)
+        {
+            unsigned int _v1, _v2, _v3, _v4;
+            myfile >> _v1 >> _v2 >> _v3 >> _v4;
+
+            o_triangles.push_back(Triangle(_v1, _v2, _v3));
+            o_triangles.push_back(Triangle(_v1, _v3, _v4));
+        }
+        else
+        {
+            std::cout << "We handle ONLY *.off files with 3 or 4 vertices per face" << std::endl;
+            myfile.close();
+            exit(1);
+        }
+    }
+
+}
+
+// ------------------------------------
+
+Vec3 getRepresentant(const std::vector<std::vector<std::vector<Vec3>>>& g_grid, const Vec3& v, const Vec3& dxyz, const Vec3& bbmin)
+{
+    int xi = int((v[0]-bbmin[0]) / dxyz[0]);
+    int yi = int((v[1]-bbmin[1]) / dxyz[1]);
+    int zi = int((v[2]-bbmin[2]) / dxyz[2]);
+
+    Vec3 center = g_grid[xi][yi][zi] +  Vec3(dxyz / 2.0f);
+    return center;
+}
+
+Triangle getCoordRepr(const std::vector<std::vector<std::vector<Vec3>>>& g_grid, const Vec3& v, const Vec3& dxyz, const Vec3& bbmin) 
+{
+    int xi = int((v[0] - bbmin[0]) / dxyz[0]);
+    int yi = int((v[1] - bbmin[1]) / dxyz[1]);
+    int zi = int((v[2] - bbmin[2]) / dxyz[2]);
+
+    if (xi == 0 && yi == 0 && zi == 0) {
+        std::cout << "Coord = 0 0 0 for Vec " << v << std::endl; 
+    }
+
+    if (g_grid[xi][yi][zi].length() < 0.00005f) {
+        std::cout << "Vec center ==  " << g_grid[xi][yi][zi] << std::endl;
+    }
+
+    return Triangle(xi, yi, zi); 
+}
+
 
 struct Mesh {
-    std::vector< Vec3 > vertices; //List of mesh vertices positions
+    std::vector< Vec3 > vertices; // List of mesh vertices positions
     std::vector< Vec3 > normals;
     std::vector< Triangle > triangles;
     std::vector< Vec3 > triangle_normals;
+
+    std::vector<std::vector<std::vector<Vec3>>> grid; 
 
     void computeTrianglesNormals(){
 
@@ -86,16 +320,192 @@ struct Mesh {
         computeTrianglesNormals();
         computeVerticesNormals();
     }
+
+    
+    void printInfos()
+    {
+        std::cout << "Mesh Vertices = " << vertices.size() << std::endl; 
+        std::cout << "Mesh Triangles = " << triangles.size() << std::endl; 
+    }
+
+    
+
+    Vec3 computeGrid(const unsigned int& res, const Vec3& bbmin, const Vec3& bbmax) 
+    {
+        grid.clear();
+        Vec3 dxyz = Vec3((bbmax[0] - bbmin[0]), (bbmax[1] - bbmin[1]), (bbmax[2] - bbmin[2]));
+        dxyz /= static_cast<float>(res);
+
+        std::vector < std::vector < Vec3 >> vecy;
+        std::vector < Vec3 > vecz;
+        for (unsigned int kx = 0; kx < res+1; kx++)
+        {
+            vecy.clear();
+            vecy.reserve(res);
+            for (unsigned int ky = 0; ky < res+1; ky++)
+            {
+                vecz.clear();
+                vecz.reserve(res);
+                for (unsigned int kz = 0; kz < res+1; kz++)
+                {
+                    vecz.emplace_back(bbmin[0] + (float)kx * dxyz[0], 
+                                        bbmin[1] + (float)ky * dxyz[1], 
+                                        bbmin[2] + (float)kz * dxyz[2]);
+                }
+                vecy.push_back(vecz);
+            }
+
+            grid.push_back(vecy);
+        }
+
+        return dxyz; 
+    }
+
+    void simplify(unsigned int resolution, const Vec3& bbmin, const Vec3& bbmax)
+    {
+        Vec3 dxyz = computeGrid(resolution, bbmin, bbmax);
+
+        // Pour chaque sommet v du maillage, 
+        // ajouter sa position et sa normale au sommet représentant de la cellule de G contenant v. 
+        // Compter le nombre de sommets par cellule.
+
+        VecDictPy representants2;
+        for (size_t k = 0; k < vertices.size(); k++)
+        {
+            Vec3 center = getRepresentant(grid, vertices[k], dxyz, bbmin);
+            representants2.add(center, k); 
+        }
+
+        std::cout << "-------------------------\n"; 
+        representants2.printInfos(); 
+        
+
+        // Vertices 
+        std::vector<Vec3> simpVertices = representants2.keys(); 
+        unsigned int ntotalclassified = 0; 
+        for (unsigned int k = 0; k < representants2.index.size(); k++)
+        {
+            ntotalclassified += representants2[k].size(); 
+        }
+
+        std::cout << "Number of vertices linked with grid : " << ntotalclassified << std::endl;
+        std::cout << "-------------------------\n";
+
+        // Triangles 
+        std::vector<Triangle> simpTriangles; 
+        int validTrig = 0; 
+        for (size_t k = 0; k < triangles.size(); k++)
+        {
+            Vec3 v0 = getRepresentant(grid, vertices[triangles[k][0]], dxyz, bbmin);
+            Vec3 v1 = getRepresentant(grid, vertices[triangles[k][1]], dxyz, bbmin);
+            Vec3 v2 = getRepresentant(grid, vertices[triangles[k][2]], dxyz, bbmin);
+
+            bool eqFound = representants2.equals(v0, v1); 
+            eqFound |= representants2.equals(v0, v2);
+            eqFound |= representants2.equals(v1, v2);
+
+            if (eqFound) {
+                continue; 
+            }
+
+            //triangles[k][ki] => index du representant 
+            bool notFound = false; 
+            Triangle t;
+
+            for (unsigned int kii = 0; kii < 3; kii++)
+            {
+                int vIdx = representants2.findIndex(getRepresentant(grid, vertices[triangles[k][kii]], dxyz, bbmin)); 
+                
+                notFound |= vIdx == -1;
+                if (notFound) { 
+                    break; 
+                }
+
+                t[kii] = vIdx;
+            }
+            
+            if (notFound) {
+                continue; 
+            }
+
+            simpTriangles.push_back(t); 
+            validTrig++; 
+
+        }
+
+
+        std::cout << "Valid Triangles = " << validTrig << std::endl; 
+        triangles.clear(); 
+        triangles.resize(simpTriangles.size());
+        triangles = simpTriangles; 
+
+        // Vertices and normals
+        std::vector<Vec3> simpNorms(simpVertices.size(), Vec3(0.0f, 0.0f, 0.0f)); 
+
+        for (size_t k = 0; k < simpVertices.size() ; k++)
+        {
+            Vec3 pos = Vec3(0.0f, 0.0f, 0.0f);
+            // get index of vertices for points[k]
+            for (const int& kr : representants2[k])
+            {
+                pos   += vertices[kr];
+                simpNorms[k] += normals[kr];
+            }
+
+            pos /= (float)representants2[k].size();
+            simpVertices[k] = pos;
+
+            simpNorms[k].normalize();
+            
+        }
+
+        vertices.clear(); 
+        vertices = simpVertices; 
+        normals.clear(); 
+        normals = simpNorms;
+
+        computeNormals(); 
+    }
+
+    void init(const std::string& filename) {
+
+        openOFF(filename, vertices, normals, triangles);
+        computeNormals();
+    }
+
+    void reset() {
+        vertices.clear(); // List of mesh vertices positions
+        normals.clear();
+        triangles.clear();
+        triangle_normals.clear();
+    }
+
+    void reset(const std::string& filename) {
+        reset(); 
+        init(filename); 
+    }
 };
 
 
+
+
+// -------------------------------------------
+// Global Variables 
+// -------------------------------------------
+
 Mesh mesh;
-
-
+Vec3 bbmin;
+Vec3 bbmax;
+unsigned int resolution = 16; 
+std::string filename = "data/elephant.off"; 
 
 bool display_normals;
 bool display_smooth_normals;
 bool display_mesh;
+bool display_grid; 
+bool display_vertices; 
+
+
 
 // -------------------------------------------
 // OpenGL/GLUT application code.
@@ -115,109 +525,7 @@ static bool fullScreen = false;
 // ------------------------------------
 
 
-// ------------------------------------
-// File I/O
-// ------------------------------------
-bool saveOFF( const std::string & filename ,
-              std::vector< Vec3 > & i_vertices ,
-              std::vector< Vec3 > & i_normals ,
-              std::vector< Triangle > & i_triangles,
-              bool save_normals = true ) {
-    std::ofstream myfile;
-    myfile.open(filename.c_str());
-    if (!myfile.is_open()) {
-        std::cout << filename << " cannot be opened" << std::endl;
-        return false;
-    }
 
-    myfile << "OFF" << std::endl ;
-
-    unsigned int n_vertices = i_vertices.size() , n_triangles = i_triangles.size();
-    myfile << n_vertices << " " << n_triangles << " 0" << std::endl;
-
-    for( unsigned int v = 0 ; v < n_vertices ; ++v ) {
-        myfile << i_vertices[v][0] << " " << i_vertices[v][1] << " " << i_vertices[v][2] << " ";
-        if (save_normals) myfile << i_normals[v][0] << " " << i_normals[v][1] << " " << i_normals[v][2] << std::endl;
-        else myfile << std::endl;
-    }
-    for( unsigned int f = 0 ; f < n_triangles ; ++f ) {
-        myfile << 3 << " " << i_triangles[f][0] << " " << i_triangles[f][1] << " " << i_triangles[f][2];
-        myfile << std::endl;
-    }
-    myfile.close();
-    return true;
-}
-
-void openOFF( std::string const & filename,
-              std::vector<Vec3> & o_vertices,
-              std::vector<Vec3> & o_normals,
-              std::vector< Triangle > & o_triangles )
-{
-    std::ifstream myfile;
-    myfile.open(filename.c_str());
-    if (!myfile.is_open())
-    {
-        std::cout << filename << " cannot be opened" << std::endl;
-        return;
-    }
-
-    std::string magic_s;
-
-    myfile >> magic_s;
-
-    if( magic_s != "OFF" )
-    {
-        std::cout << magic_s << " != OFF :   We handle ONLY *.off files." << std::endl;
-        myfile.close();
-        exit(1);
-    }
-
-    int n_vertices , n_faces , dummy_int;
-    myfile >> n_vertices >> n_faces >> dummy_int;
-
-    o_vertices.clear();
-
-    for( int v = 0 ; v < n_vertices ; ++v )
-    {
-        float x , y , z ;
-
-        myfile >> x >> y >> z ;
-        o_vertices.push_back( Vec3( x , y , z ) );
-
-    }
-
-    o_triangles.clear();
-    for( int f = 0 ; f < n_faces ; ++f )
-    {
-        int n_vertices_on_face;
-        myfile >> n_vertices_on_face;
-
-        if( n_vertices_on_face == 3 )
-        {
-            unsigned int _v1 , _v2 , _v3;
-            myfile >> _v1 >> _v2 >> _v3;
-
-            o_triangles.push_back(Triangle( _v1, _v2, _v3 ));
-        }
-        else if( n_vertices_on_face == 4 )
-        {
-            unsigned int _v1 , _v2 , _v3 , _v4;
-            myfile >> _v1 >> _v2 >> _v3 >> _v4;
-
-            o_triangles.push_back(Triangle(_v1, _v2, _v3 ));
-            o_triangles.push_back(Triangle(_v1, _v3, _v4));
-        }
-        else
-        {
-            std::cout << "We handle ONLY *.off files with 3 or 4 vertices per face" << std::endl;
-            myfile.close();
-            exit(1);
-        }
-    }
-
-}
-
-// ------------------------------------
 
 void computeBBox( std::vector< Vec3 > const & i_positions, Vec3 & bboxMin, Vec3 & bboxMax ) {
     bboxMin = Vec3 ( FLT_MAX , FLT_MAX , FLT_MAX );
@@ -262,6 +570,8 @@ void init () {
     display_normals = false;
     display_mesh = true;
     display_smooth_normals = true;
+    display_grid = false; 
+    display_vertices = false; 
 
 }
 
@@ -361,15 +671,76 @@ void drawNormals(Mesh const& i_mesh){
     }
 }
 
+void drawPointSet(std::vector< Vec3 > const& i_positions, std::vector< Vec3 > const& i_normals) {
+    glBegin(GL_POINTS);
+    for (unsigned int pIt = 0; pIt < i_positions.size(); ++pIt) {
+        glNormal3f(i_normals[pIt][0], i_normals[pIt][1], i_normals[pIt][2]);
+        glVertex3f(i_positions[pIt][0], i_positions[pIt][1], i_positions[pIt][2]);
+    }
+    glEnd();
+}
+
+// Wrapper color and size for pointset
+void drawPoints(std::vector<Vec3>const& projpos, std::vector<Vec3>const& projnorm,
+    float nR = 1.0f, float nG = 0.5f, float nB = 0.5f, int pointsize = 4)
+{
+    glPointSize(pointsize);
+    glColor3f(nR, nG, nB);
+    drawPointSet(projpos, projnorm);
+}
+
+
+// Wrapper color and size for grid 
+void drawGrid(std::vector < std::vector < std::vector<Vec3>>>const& gridset, float nR = 1.0f, float nG = 0.5f,
+                float nB = 0.5f, int pointsize = 4)
+{
+    glPointSize(pointsize);
+    glColor3f(nR, nG, nB);
+
+    Vec3 sameNormal = Vec3(1.0f, 0.0, 0.0); 
+    Vec3 pointsetSize = Vec3(gridset.size(), gridset[0].size(), gridset[0][0].size());
+
+    glBegin(GL_POINTS);
+    for (unsigned int pItx = 0; pItx < (unsigned int)pointsetSize[0]; ++pItx)
+    {
+        for (unsigned int pIty = 0; pIty < (unsigned int)pointsetSize[1]; ++pIty)
+        {
+            for (unsigned int pItz = 0; pItz < (unsigned int)pointsetSize[2]; ++pItz)
+            {
+                glNormal3f(sameNormal[0], sameNormal[1], sameNormal[2]);
+                glVertex3f(gridset[pItx][pIty][pItz][0],
+                    gridset[pItx][pIty][pItz][1],
+                    gridset[pItx][pIty][pItz][2]);
+
+            }
+        }
+    }
+    glEnd();
+} 
+
+
 //Draw fonction
 void draw () {
 
     glColor3f(0.8,1,0.8);
-    drawMesh(mesh);
+    if (display_mesh)
+    {
+        drawMesh(mesh);
+    }
+    
 
     if(display_normals){
         glColor3f(1.,0.,0.);
         drawNormals(mesh);
+    }
+
+    if (display_grid) {
+        drawGrid(mesh.grid);
+    }
+
+    if (display_vertices) {
+        std::vector<Vec3> normnormals(mesh.vertices.size(), Vec3(1.0f, 0.0, 0.0)); 
+        drawPoints(mesh.vertices, normnormals, 1.0f, 0.0, 1.0f, 8);
     }
 }
 
@@ -412,6 +783,10 @@ void key (unsigned char keyPressed, int x, int y) {
             glPolygonMode (GL_FRONT_AND_BACK, GL_LINE);
         break;
 
+    case 'm': //Display Mesh
+        display_mesh = !display_mesh;
+        break;
+
     case 'n': //Press n key to display normals
         display_normals = !display_normals;
         break;
@@ -420,6 +795,33 @@ void key (unsigned char keyPressed, int x, int y) {
     case 's': //Switches between face normals and vertices normals
         display_smooth_normals = !display_smooth_normals;
         break;
+
+    case 'g': 
+        display_grid = !display_grid; 
+        break; 
+
+    case 'y': // Simplify 
+        std::cout << "Resolution = " << resolution << std::endl; 
+        mesh.simplify(resolution, bbmin, bbmax); 
+        mesh.computeNormals(); 
+        break; 
+
+    case 'r': // Reset Mesh
+        mesh.reset(filename); 
+        break;
+
+    case 'a' : // Add a level in simplification 
+        resolution *= 2; 
+        std::cout << "Increase Resolution to " << resolution << "." << std::endl; 
+        break; 
+
+    case 'd' : // decrease resolution 
+        resolution = resolution > 4  ? resolution / 2 : 4;
+        std::cout << "Decrease Resolution to " << resolution << "." << std::endl;
+        break;
+    case 'p': // draw pointset 
+        display_vertices = !display_vertices; 
+        break; 
 
     default:
         break;
@@ -499,14 +901,18 @@ int main (int argc, char ** argv) {
     glutMouseFunc (mouse);
     key ('?', 0, 0);
 
-    //Unit sphere mesh loaded with precomputed normals
-    openOFF("data/elephant.off", mesh.vertices, mesh.normals, mesh.triangles);
+    // Unit sphere mesh loaded with precomputed normals
+    openOFF(filename, mesh.vertices, mesh.normals, mesh.triangles);
     mesh.computeNormals();
 
     // Compute bounding box 
-    Vec3 bbmin; 
-    Vec3 bbmax; 
     computeBBox(mesh.vertices, bbmin, bbmax); 
+    double diagBBox = (bbmax - bbmin).length();
+    Vec3 dxyz = Vec3(0.1f * diagBBox, 0.1f * diagBBox, 0.1f * diagBBox);
+    bbmin -= dxyz; 
+    bbmax += dxyz; 
+    // Compute Grid at least once to display it 
+    mesh.computeGrid(resolution, bbmin, bbmax); 
 
     glutMainLoop ();
     return EXIT_SUCCESS;
