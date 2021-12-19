@@ -29,11 +29,149 @@
 #include "src/Camera.h"
 
 
+
+// Out of Core simplification 
+// https://web.cse.ohio-state.edu/~shen.94/Su01_888/lindstro.pdf
+
+struct OCS {
+
+    float m_espilon = (float)1.0e-2;
+    float m_quadric[16]; 
+    float n[4];
+    Mat3 m_A; // Q = (A , -b ; -bT , c)
+    Vec3 m_b; 
+
+    inline OCS()
+    {
+        n[0] = 0.0f;  n[1] = 0.0f; n[2] = 0.0f;  n[3] = 0.0f; 
+        for (unsigned int k = 0; k < 16; k++)
+        {
+            m_quadric[k] = 0.0f; 
+        }
+        m_A = Mat3();
+        m_b = Vec3(0.0f, 0.0f, 0.0f); 
+    }; 
+
+    void reset() {
+        n[0] = 0.0f;  n[1] = 0.0f; n[2] = 0.0f;  n[3] = 0.0f;
+        for (unsigned int k = 0; k < 16; k++)
+        {
+            m_quadric[k] = 0.0f;
+        }
+
+        m_A = Mat3(); 
+
+        m_b[0] = 0.0f; 
+        m_b[1] = 0.0f; 
+        m_b[2] = 0.0f; 
+    }
+
+    // Solve Ax = b
+    Vec3 solveA(const Vec3& cellcenter)
+    {
+        setA(); 
+        setB(); 
+        
+        // SVD Decomposition 
+        Mat3 U, Vt; 
+        float sx, sy, sz; // Sigma
+        m_A.SVD(U, sx, sy, sz, Vt); 
+        Vec3 sxyz = Vec3(sx, sy, sz); 
+        //std::cout << "Singular Values : " << sxyz << std::endl; 
+        Mat3 sigmapinv = processPseudoInvSigma(sxyz, m_espilon);
+        // our vertice approximation
+        Vec3 x; 
+        // x = x^ + V * S+ * U.T * ( b - A * x^)
+        x = cellcenter + Vt.getTranspose() * sigmapinv * U.getTranspose() * (m_b - m_A * cellcenter); 
+
+        return x; 
+    }
+
+    // discard lowest singular values and inverse matrix => stability 
+    Mat3 processPseudoInvSigma(const Vec3& sxyz, float epsilon)
+    {
+        Mat3 sigma = Mat3::Identity(); 
+        // SVD with ordered singular values from gsl 
+        // largest singular value = s[0]
+        sigma(0, 0) = sxyz[0];
+        sigma(1, 1) = sxyz[1] / sxyz[0] > epsilon ? 1.0f / sxyz[1] : 0.0f;
+        sigma(2, 2) = sxyz[2] / sxyz[0] > epsilon ? 1.0f / sxyz[2] : 0.0f;
+
+        return sigma; 
+        
+    }
+
+    inline void setA()
+    {
+        m_A = Mat3();
+        m_A(0, 0) = m_quadric[0];
+        m_A(0, 1) = m_quadric[1];
+        m_A(0, 2) = m_quadric[2];
+    
+        m_A(1, 0) = m_quadric[4];
+        m_A(1, 1) = m_quadric[5];
+        m_A(1, 2) = m_quadric[6];
+    
+        m_A(2, 0) = m_quadric[8];
+        m_A(2, 1) = m_quadric[9];
+        m_A(2, 2) = m_quadric[10];
+    }
+
+    inline void setB() {
+        m_b = - 1.0f * Vec3(m_quadric[12], m_quadric[13], m_quadric[14]) ;
+    }
+    // for each triangle we add the quadric 
+    void addingUpQ(const Vec3& x1, const Vec3& x2, const Vec3& x3)
+    {
+        // Process N
+        Vec3 wnorm = Vec3::cross(x1, x2) + Vec3::cross(x2, x3) + Vec3::cross(x3, x1); 
+        n[3] = - scalar3Product(x1, x2, x3); 
+        n[0] = wnorm[0]; 
+        n[1] = wnorm[1];
+        n[2] = wnorm[2];
+
+
+        // Q = n nT : row major
+        // 1st row 
+        m_quadric[0] += n[0] * n[0]; 
+        m_quadric[1] += n[0] * n[1]; 
+        m_quadric[2] += n[0] * n[2]; 
+        m_quadric[3] += n[0] * n[3]; 
+        // 2nd row   
+        m_quadric[4] += n[1] * n[0];
+        m_quadric[5] += n[1] * n[1];
+        m_quadric[6] += n[1] * n[2];
+        m_quadric[7] += n[1] * n[3];
+                     
+        // 3rd row   
+        m_quadric[8] += n[2] * n[0];
+        m_quadric[9] += n[2] * n[1];
+        m_quadric[10]+= n[2] * n[2];
+        m_quadric[11]+= n[2] * n[3];
+
+        // 4th row => we can discard the last line if needed 
+        m_quadric[12] += n[3] * n[0];
+        m_quadric[13] += n[3] * n[1];
+        m_quadric[14] += n[3] * n[2];
+        m_quadric[15] += n[3] * n[3];
+    }
+
+    inline float scalar3Product(const Vec3& a, const Vec3& b, const Vec3& c)
+    {
+        return Vec3::dot(Vec3::cross(a, b), c); 
+    }
+
+
+    
+
+};
+
 // VecDictPy is a python-like dictionnary specialized in Vec3f-key
 struct VecDictPy {
 
     std::vector<std::vector<int>> index; 
     std::vector<Vec3> points; 
+    std::vector<OCS> quadrics; 
 
     float epsilon = (float)1.0e-7; 
 
@@ -118,6 +256,11 @@ struct VecDictPy {
     void printInfos() {
         std::cout << "Npoints = " << points.size() << std::endl;
         std::cout << "Number of indices = " << processNindex()  << std::endl;
+    }
+
+    void initQuadrics()
+    {
+        quadrics = std::vector<OCS>(points.size()); 
     }
 };
 
@@ -288,6 +431,8 @@ struct Mesh {
     std::vector< Vec3 > normals;
     std::vector< Triangle > triangles;
     std::vector< Vec3 > triangle_normals;
+
+    
 
     std::vector<std::vector<std::vector<Vec3>>> grid; 
 
@@ -465,6 +610,123 @@ struct Mesh {
         normals = simpNorms;
 
         computeNormals(); 
+    }
+
+    void simplifyOCS(unsigned int resolution, const Vec3& bbmin, const Vec3& bbmax)
+    {
+        Vec3 dxyz = computeGrid(resolution, bbmin, bbmax);
+
+        // Pour chaque sommet v du maillage, 
+        // ajouter sa position et sa normale au sommet représentant de la cellule de G contenant v. 
+        // Compter le nombre de sommets par cellule.
+
+        VecDictPy representants;
+        for (size_t k = 0; k < vertices.size(); k++)
+        {
+            Vec3 center = getRepresentant(grid, vertices[k], dxyz, bbmin);
+            representants.add(center, k);
+        }
+
+        std::cout << "-------------------------\n";
+        representants.printInfos();
+        representants.initQuadrics(); 
+
+
+        // Vertices 
+        std::vector<Vec3> simpVertices = representants.keys();
+        unsigned int ntotalclassified = 0;
+        for (unsigned int k = 0; k < representants.index.size(); k++)
+        {
+            ntotalclassified += representants[k].size();
+        }
+
+        std::cout << "Number of vertices linked with grid : " << ntotalclassified << std::endl;
+        std::cout << "-------------------------\n";
+
+        // Triangles 
+        std::vector<Triangle> simpTriangles;
+        int validTrig = 0;
+
+        for (size_t k = 0; k < triangles.size(); k++)
+        {
+            Vec3 v0 = getRepresentant(grid, vertices[triangles[k][0]], dxyz, bbmin);
+            Vec3 v1 = getRepresentant(grid, vertices[triangles[k][1]], dxyz, bbmin);
+            Vec3 v2 = getRepresentant(grid, vertices[triangles[k][2]], dxyz, bbmin);
+
+            
+
+            bool eqFound = representants.equals(v0, v1);
+            eqFound |= representants.equals(v0, v2);
+            eqFound |= representants.equals(v1, v2);
+
+            if (eqFound) {
+                continue;
+            }
+
+            //triangles[k][ki] => index du representant 
+            bool notFound = false;
+            Triangle t;
+
+            for (unsigned int kii = 0; kii < 3; kii++)
+            {
+                int vIdx = representants.findIndex(getRepresentant(grid, vertices[triangles[k][kii]], dxyz, bbmin));
+
+                notFound |= vIdx == -1;
+                if (notFound) {
+                    break;
+                }
+
+                t[kii] = vIdx;
+            }
+
+            if (notFound) {
+                continue;
+            }
+
+            // Compute Associated Quadric 
+            for (unsigned int kq = 0; kq < 3; kq++) {
+                int indexVec = representants.findIndex(getRepresentant(grid, vertices[triangles[k][kq]], dxyz, bbmin));
+                representants.quadrics[indexVec].addingUpQ(vertices[triangles[k][0]],
+                                                            vertices[triangles[k][1]],
+                                                            vertices[triangles[k][2]]);
+            }
+
+            simpTriangles.push_back(t);
+            validTrig++;
+
+        }
+
+
+        std::cout << "Valid Triangles = " << validTrig << std::endl;
+        triangles.clear();
+        triangles.resize(simpTriangles.size());
+        triangles = simpTriangles;
+
+        // Vertices and normals
+        std::vector<Vec3> simpNorms(simpVertices.size(), Vec3(0.0f, 0.0f, 0.0f));
+
+        for (size_t k = 0; k < simpVertices.size(); k++)
+        {
+            Vec3 pos = Vec3(0.0f, 0.0f, 0.0f);
+            // get index of vertices for points[k]
+            for (const int& kr : representants[k])
+            {
+                simpNorms[k] += normals[kr];
+            }
+
+            // MSE 
+            simpVertices[k] = representants.quadrics[k].solveA(representants.points[k]);
+
+            simpNorms[k].normalize();
+
+        }
+
+        vertices.clear();
+        vertices = simpVertices;
+        normals.clear();
+        normals = simpNorms;
+
+        computeNormals();
     }
 
     void init(const std::string& filename) {
@@ -745,17 +1007,22 @@ void draw () {
 }
 
 void display () {
+    
     glLoadIdentity ();
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     camera.apply ();
     draw ();
     glFlush ();
-    glutSwapBuffers ();
+    glutSwapBuffers(); 
 }
 
 void idle () {
     glutPostRedisplay ();
 }
+
+
+
+
 
 // ------------------------------------
 // User inputs
@@ -802,9 +1069,15 @@ void key (unsigned char keyPressed, int x, int y) {
 
     case 'y': // Simplify 
         std::cout << "Resolution = " << resolution << std::endl; 
+        std::cout << "Mean Vertex Simplification" << std::endl;
         mesh.simplify(resolution, bbmin, bbmax); 
-        mesh.computeNormals(); 
         break; 
+
+    case 'u': // Simplify 
+        std::cout << "Resolution = " << resolution << std::endl;
+        std::cout << "Out-of-Core Simplification"  << std::endl;
+        mesh.simplifyOCS(resolution, bbmin, bbmax);
+        break;
 
     case 'r': // Reset Mesh
         mesh.reset(filename); 
@@ -891,6 +1164,8 @@ int main (int argc, char ** argv) {
     glutInitDisplayMode (GLUT_RGBA | GLUT_DEPTH | GLUT_DOUBLE);
     glutInitWindowSize (SCREENWIDTH, SCREENHEIGHT);
     window = glutCreateWindow ("TP HAI714I");
+
+
 
     init ();
     glutIdleFunc (idle);

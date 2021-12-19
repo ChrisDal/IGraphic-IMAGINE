@@ -8,6 +8,7 @@
 
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_linalg.h>
+
 // you need to add the following libraries to your project : gsl, gslcblas
 
 class Vec3 {

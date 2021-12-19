@@ -7,6 +7,9 @@
 // All rights reserved.
 // **************************************************
 
+#if defined(_WIN32)
+    #include <Windows.h>
+#endif
 #include "Camera.h"
 #include <GL/gl.h>
 #include <GL/glu.h>
