@@ -93,7 +93,7 @@ struct OCS {
         Mat3 sigma = Mat3::Identity(); 
         // SVD with ordered singular values from gsl 
         // largest singular value = s[0]
-        sigma(0, 0) = sxyz[0];
+        sigma(0, 0) = 1.0f / sxyz[0];
         sigma(1, 1) = sxyz[1] / sxyz[0] > epsilon ? 1.0f / sxyz[1] : 0.0f;
         sigma(2, 2) = sxyz[2] / sxyz[0] > epsilon ? 1.0f / sxyz[2] : 0.0f;
 
@@ -759,7 +759,7 @@ Mesh mesh;
 Vec3 bbmin;
 Vec3 bbmax;
 unsigned int resolution = 16; 
-std::string filename = "data/elephant.off"; 
+std::string filename = "data/avion_64.off"; 
 
 bool display_normals;
 bool display_smooth_normals;
